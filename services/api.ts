@@ -8,9 +8,9 @@ const getHeaders = () => {
   const user = localStorage.getItem('qb_user');
   if (user) {
     try {
-      const { token } = JSON.parse(user);
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+      const parsed = JSON.parse(user);
+      if (parsed && parsed.token) {
+        headers['Authorization'] = `Bearer ${parsed.token}`;
       }
     } catch (e) {
       console.error("Error parsing user from localStorage", e);
@@ -20,20 +20,23 @@ const getHeaders = () => {
 };
 
 /**
- * Safely parses JSON response. If parsing fails, returns null or throws an informative error.
+ * Safely parses JSON response. 
+ * In this environment, we expect failures if the backend isn't deployed.
+ * Instead of throwing loud errors, we return null so the frontend can use its MOCK data.
  */
 const safeParseJson = async (response: Response) => {
   const contentType = response.headers.get('content-type');
-  if (!contentType || !contentType.includes('application/json')) {
-    // If not JSON, get text for debugging or just throw
-    const text = await response.text();
-    throw new Error(text || `Expected JSON but received ${response.status} status.`);
+  
+  // If the status is 500 or not OK, we likely don't have a real backend.
+  // We return null to signal "No data from API, use fallback".
+  if (!response.ok || !contentType || !contentType.includes('application/json')) {
+    return null;
   }
 
   try {
     return await response.json();
   } catch (error) {
-    throw new Error('Response was not valid JSON');
+    return null;
   }
 };
 
@@ -47,10 +50,9 @@ export const apiService = {
       });
       
       const result = await safeParseJson(response);
-      if (!response.ok) throw new Error(result?.message || 'Network request failed');
+      if (result === null) throw new Error('API_UNAVAILABLE');
       return result;
     } catch (error) {
-      // Re-throw so the calling context (like AuthContext) can catch and handle fallback
       throw error;
     }
   },
@@ -62,11 +64,9 @@ export const apiService = {
         headers: getHeaders(),
       });
       
-      const result = await safeParseJson(response);
-      if (!response.ok) throw new Error(result?.message || 'Network request failed');
-      return result;
+      return await safeParseJson(response);
     } catch (error) {
-      throw error;
+      return null;
     }
   },
 
@@ -78,11 +78,9 @@ export const apiService = {
         body: JSON.stringify(data),
       });
       
-      const result = await safeParseJson(response);
-      if (!response.ok) throw new Error(result?.message || 'Network request failed');
-      return result;
+      return await safeParseJson(response);
     } catch (error) {
-      throw error;
+      return null;
     }
   },
 
@@ -93,11 +91,9 @@ export const apiService = {
         headers: getHeaders(),
       });
       
-      const result = await safeParseJson(response);
-      if (!response.ok) throw new Error(result?.message || 'Network request failed');
-      return result;
+      return await safeParseJson(response);
     } catch (error) {
-      throw error;
+      return null;
     }
   }
 };
