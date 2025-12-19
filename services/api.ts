@@ -21,19 +21,14 @@ const getHeaders = () => {
 
 /**
  * Safely parses JSON response. 
- * In this environment, we expect failures if the backend isn't deployed.
- * Instead of throwing loud errors, we return null so the frontend can use its MOCK data.
+ * If the response is not OK or not JSON, returns null.
  */
 const safeParseJson = async (response: Response) => {
-  const contentType = response.headers.get('content-type');
-  
-  // If the status is 500 or not OK, we likely don't have a real backend.
-  // We return null to signal "No data from API, use fallback".
-  if (!response.ok || !contentType || !contentType.includes('application/json')) {
-    return null;
-  }
-
   try {
+    const contentType = response.headers.get('content-type');
+    if (!response.ok || !contentType || !contentType.includes('application/json')) {
+      return null;
+    }
     return await response.json();
   } catch (error) {
     return null;
@@ -41,6 +36,9 @@ const safeParseJson = async (response: Response) => {
 };
 
 export const apiService = {
+  /**
+   * Performs a POST request. Returns null on any failure.
+   */
   async post(endpoint: string, data: any) {
     try {
       const response = await fetch(`${API_URL}${endpoint}`, {
@@ -48,28 +46,30 @@ export const apiService = {
         headers: getHeaders(),
         body: JSON.stringify(data),
       });
-      
-      const result = await safeParseJson(response);
-      if (result === null) throw new Error('API_UNAVAILABLE');
-      return result;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  async get(endpoint: string) {
-    try {
-      const response = await fetch(`${API_URL}${endpoint}`, {
-        method: 'GET',
-        headers: getHeaders(),
-      });
-      
       return await safeParseJson(response);
     } catch (error) {
       return null;
     }
   },
 
+  /**
+   * Performs a GET request. Returns null on any failure.
+   */
+  async get(endpoint: string) {
+    try {
+      const response = await fetch(`${API_URL}${endpoint}`, {
+        method: 'GET',
+        headers: getHeaders(),
+      });
+      return await safeParseJson(response);
+    } catch (error) {
+      return null;
+    }
+  },
+
+  /**
+   * Performs a PUT request. Returns null on any failure.
+   */
   async put(endpoint: string, data: any) {
     try {
       const response = await fetch(`${API_URL}${endpoint}`, {
@@ -77,20 +77,21 @@ export const apiService = {
         headers: getHeaders(),
         body: JSON.stringify(data),
       });
-      
       return await safeParseJson(response);
     } catch (error) {
       return null;
     }
   },
 
+  /**
+   * Performs a DELETE request. Returns null on any failure.
+   */
   async delete(endpoint: string) {
     try {
       const response = await fetch(`${API_URL}${endpoint}`, {
         method: 'DELETE',
         headers: getHeaders(),
       });
-      
       return await safeParseJson(response);
     } catch (error) {
       return null;

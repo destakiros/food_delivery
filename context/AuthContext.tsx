@@ -24,7 +24,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const savedUser = localStorage.getItem('qb_user');
     if (savedUser) {
       try {
-        setUser(JSON.parse(savedUser));
+        const parsed = JSON.parse(savedUser);
+        setUser(parsed);
+        if (parsed.token === 'demo-token') setIsDemoMode(true);
       } catch (e) {
         localStorage.removeItem('qb_user');
       }
@@ -33,9 +35,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (email: string, password: string) => {
-    try {
-      // Try real API first
-      const data = await apiService.post('/auth/login', { email, password });
+    // Try real API first
+    const data = await apiService.post('/auth/login', { email, password });
+    
+    if (data) {
       const userData = {
         id: data._id || data.id,
         name: data.name,
@@ -47,14 +50,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(userData as any);
       localStorage.setItem('qb_user', JSON.stringify(userData));
       setIsDemoMode(false);
-    } catch (error: any) {
-      // Fallback to Demo Mode (LocalStorage Users)
-      console.warn("API Login failed, switching to Demo Mode:", error.message);
-      
+    } else {
+      // API failed or unavailable -> Use Demo Logic
+      console.log("Switching to Demo Login logic...");
       const demoUsers = JSON.parse(localStorage.getItem('demo_users') || '[]');
       const foundUser = demoUsers.find((u: any) => u.email === email && u.password === password);
       
-      // Guest or default admin checks for convenience
       const isGuest = email === 'guest@example.com' && password === 'guest123';
       const isAdmin = email === 'admin@innout.com' && password === 'admin123';
 
@@ -73,15 +74,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('qb_user', JSON.stringify(userData));
         setIsDemoMode(true);
       } else {
-        throw new Error('Invalid credentials');
+        throw new Error('Invalid email or password');
       }
     }
   };
 
   const register = async (name: string, email: string, password: string) => {
-    try {
-      // Try real API first
-      const data = await apiService.post('/auth/register', { name, email, password });
+    // Try real API first
+    const data = await apiService.post('/auth/register', { name, email, password });
+    
+    if (data) {
       const userData = {
         id: data._id || data.id,
         name: data.name,
@@ -93,19 +95,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(userData as any);
       localStorage.setItem('qb_user', JSON.stringify(userData));
       setIsDemoMode(false);
-    } catch (error: any) {
-      console.warn("API Register failed, using Demo Mode:", error.message);
-      
+    } else {
+      // API failed or unavailable -> Use Demo Logic
+      console.log("Switching to Demo Registration logic...");
       const demoUsers = JSON.parse(localStorage.getItem('demo_users') || '[]');
       if (demoUsers.find((u: any) => u.email === email)) {
-        throw new Error('User already exists');
+        throw new Error('User already exists in demo mode');
       }
 
       const newUser = {
         id: 'demo-' + Date.now(),
         name,
         email,
-        password, // Stored only for demo login
+        password, // Stored locally only for demo session
         role: UserRole.CUSTOMER,
         notifications: [{ id: '1', message: 'Welcome to In-N-Out Eats! (Demo Mode)', time: 'Just now', read: false }]
       };
