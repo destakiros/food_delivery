@@ -23,7 +23,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const savedUser = localStorage.getItem('qb_user');
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (e) {
+        localStorage.removeItem('qb_user');
+      }
     }
     setIsLoading(false);
   }, []);
@@ -50,17 +54,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const demoUsers = JSON.parse(localStorage.getItem('demo_users') || '[]');
       const foundUser = demoUsers.find((u: any) => u.email === email && u.password === password);
       
-      if (foundUser) {
-        const userData = { ...foundUser, token: 'demo-token' };
-        delete userData.password;
-        setUser(userData);
+      // Guest or default admin checks for convenience
+      const isGuest = email === 'guest@example.com' && password === 'guest123';
+      const isAdmin = email === 'admin@innout.com' && password === 'admin123';
+
+      if (foundUser || isGuest || isAdmin) {
+        let userData;
+        if (isAdmin) {
+          userData = { id: 'admin-id', name: 'System Admin', email: 'admin@innout.com', role: UserRole.ADMIN, token: 'demo-token', notifications: [] };
+        } else if (isGuest) {
+          userData = { id: 'guest-id', name: 'Guest User', email: 'guest@example.com', role: UserRole.CUSTOMER, token: 'demo-token', notifications: [] };
+        } else {
+          userData = { ...foundUser, token: 'demo-token' };
+          delete userData.password;
+        }
+        
+        setUser(userData as any);
         localStorage.setItem('qb_user', JSON.stringify(userData));
-        setIsDemoMode(true);
-      } else if (email === 'admin@innout.com' && password === 'admin123') {
-        // Hardcoded admin for convenience
-        const adminUser = { id: 'admin-id', name: 'System Admin', email: 'admin@innout.com', role: UserRole.ADMIN, token: 'demo-token', notifications: [] };
-        setUser(adminUser as any);
-        localStorage.setItem('qb_user', JSON.stringify(adminUser));
         setIsDemoMode(true);
       } else {
         throw new Error('Invalid credentials');
@@ -88,7 +98,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       const demoUsers = JSON.parse(localStorage.getItem('demo_users') || '[]');
       if (demoUsers.find((u: any) => u.email === email)) {
-        throw new Error('User already exists in demo mode');
+        throw new Error('User already exists');
       }
 
       const newUser = {
