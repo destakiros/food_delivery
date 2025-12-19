@@ -1,0 +1,105 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply antialiased bg-[#fafafa] text-gray-900 overflow-x-hidden transition-colors duration-300 selection:bg-[#D62828] selection:text-white;
+  }
+
+  /* Elite Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #ffffff;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #D62828, #FFCA3A);
+    border-radius: 10px;
+  }
+}
+
+@layer components {
+  /* THEME COLORS (In-N-Out Official Palette) */
+  .text-ino-red { color: #D62828; }
+  .bg-ino-red { background-color: #D62828; }
+  .text-ino-yellow { color: #FFCA3A; }
+  .bg-ino-yellow { background-color: #FFCA3A; }
+
+  /* GLASSMORPHISM */
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl;
+  }
+
+  /* PREMIUM SHADOWS */
+  .shadow-elite {
+    box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.1), 0 10px 20px -5px rgba(0, 0, 0, 0.04);
+  }
+
+  /* GLOW EFFECTS */
+  .glow-red {
+    box-shadow: 0 0 30px rgba(214, 40, 40, 0.25);
+  }
+  
+  .glow-yellow {
+    box-shadow: 0 0 30px rgba(255, 202, 58, 0.3);
+  }
+
+  /* TYPOGRAPHY - HIGH CONTRAST */
+  .font-black-display {
+    @apply font-black tracking-tighter uppercase;
+  }
+
+  /* FOOD CARD ENHANCEMENTS */
+  .food-card-premium {
+    @apply bg-white rounded-[3rem] overflow-hidden shadow-elite border border-gray-100/50 transition-all duration-700 flex flex-col h-full relative;
+  }
+
+  .food-card-premium:hover {
+    @apply -translate-y-6 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.2)];
+  }
+
+  .premium-badge {
+    @apply px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-sm;
+  }
+
+  /* HERO ANIMATION */
+  .hero-gradient {
+    background: linear-gradient(135deg, rgba(214, 40, 40, 0.95) 0%, rgba(20, 20, 20, 1) 100%);
+  }
+
+  /* IMAGE OVERLAY GRADIENT */
+  .img-overlay-bottom {
+    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+  }
+}
+
+/* CUSTOM ANIMATIONS */
+@keyframes float {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-25px) rotate(2deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+.animate-float {
+  animation: float 8s ease-in-out infinite;
+}
+
+@keyframes slow-zoom {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.1); }
+}
+
+.animate-slow-zoom {
+  animation: slow-zoom 20s ease-in-out infinite alternate;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
