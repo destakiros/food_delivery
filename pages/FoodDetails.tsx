@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { FoodItem, Review } from '../types';
 import { useCart } from '../context/CartContext';
@@ -78,9 +78,24 @@ const FoodDetails: React.FC = () => {
     setSelectedOptions(prev => ({ ...prev, [optionName]: choice }));
   };
 
+  // Dynamically calculate the total price based on selected options
+  const currentTotalPrice = useMemo(() => {
+    if (!food) return 0;
+    let total = food.price;
+    if (food.options) {
+      food.options.forEach(opt => {
+        const selectedChoice = selectedOptions[opt.name];
+        if (selectedChoice && opt.priceModifiers && opt.priceModifiers[selectedChoice]) {
+          total += opt.priceModifiers[selectedChoice];
+        }
+      });
+    }
+    return total;
+  }, [food, selectedOptions]);
+
   const handleAddToCart = () => {
     if (food) {
-      addToCart(food, selectedOptions);
+      addToCart(food, selectedOptions, currentTotalPrice);
       showToast('Masterpiece added to order.', 'success');
     }
   };
@@ -169,7 +184,7 @@ const FoodDetails: React.FC = () => {
                </div>
                <div>
                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Valuation</p>
-                  <p className="text-5xl font-black text-orange-600 tracking-tighter">${food.price.toFixed(2)}</p>
+                  <p className="text-5xl font-black text-orange-600 tracking-tighter">${currentTotalPrice.toFixed(2)}</p>
                </div>
             </div>
 
@@ -188,19 +203,27 @@ const FoodDetails: React.FC = () => {
                   <div key={opt.name}>
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em] mb-4">Customize {opt.name}</p>
                     <div className="flex flex-wrap gap-3">
-                      {opt.choices.map((choice) => (
-                        <button
-                          key={choice}
-                          onClick={() => handleOptionSelect(opt.name, choice)}
-                          className={`px-8 py-4 rounded-2xl text-[12px] font-black tracking-widest uppercase transition-all border ${
-                            selectedOptions[opt.name] === choice
-                              ? 'bg-orange-600 text-white border-orange-600 shadow-xl scale-105'
-                              : 'bg-white text-gray-600 border-gray-100 hover:border-orange-600/30'
-                          }`}
-                        >
-                          {choice}
-                        </button>
-                      ))}
+                      {opt.choices.map((choice) => {
+                        const modifier = opt.priceModifiers?.[choice];
+                        return (
+                          <button
+                            key={choice}
+                            onClick={() => handleOptionSelect(opt.name, choice)}
+                            className={`px-8 py-4 rounded-2xl text-[12px] font-black tracking-widest uppercase transition-all border ${
+                              selectedOptions[opt.name] === choice
+                                ? 'bg-orange-600 text-white border-orange-600 shadow-xl scale-105'
+                                : 'bg-white text-gray-600 border-gray-100 hover:border-orange-600/30'
+                            }`}
+                          >
+                            <span>{choice}</span>
+                            {modifier && modifier !== 0 && (
+                              <span className={`ml-2 text-[10px] ${selectedOptions[opt.name] === choice ? 'text-orange-100' : 'text-orange-600'}`}>
+                                (+${modifier.toFixed(2)})
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 ))}
@@ -217,7 +240,7 @@ const FoodDetails: React.FC = () => {
               }`}
             >
               <i className="ph-bold ph-shopping-bag"></i>
-              <span>{food.isAvailable ? 'Secure Your Order' : 'Inventory Depleted'}</span>
+              <span>{food.isAvailable ? `Add to Order • $${currentTotalPrice.toFixed(2)}` : 'Inventory Depleted'}</span>
             </button>
           </div>
         </div>

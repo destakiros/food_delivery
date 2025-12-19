@@ -1,3 +1,4 @@
+
 import { FoodItem } from './types';
 
 export interface DetailedFoodItem extends FoodItem {
@@ -19,55 +20,9 @@ export const MOCK_FOODS: DetailedFoodItem[] = [
     prepTime: '8-12 min',
     calories: 670,
     options: [
+      { name: 'Size', choices: ['Standard', 'Double-Up', 'The Feast'], priceModifiers: { 'Double-Up': 2.50, 'The Feast': 4.50 } },
       { name: 'Onions', choices: ['With Onions', 'No Onions', 'Grilled Onions', 'Whole Grilled Onion'] },
-      { name: 'Bun Type', choices: ['Classic Sponge', 'Toasted Brioche', 'Protein Style (Lettuce)'] },
-      { name: 'Doneness', choices: ['Medium', 'Medium Well', 'Well Done'] }
-    ]
-  },
-  {
-    id: '16',
-    name: 'Gomen Beef Burger',
-    description: 'A local Addis masterpiece. 100% beef patty topped with sautéed Gomen (collard greens), spiced butter, and melted provolone.',
-    category: 'Burgers',
-    price: 6.95,
-    imageURL: 'https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?auto=format&fit=crop&q=80&w=800&h=600',
-    isAvailable: true,
-    rating: 5.0,
-    prepTime: '10-15 min',
-    calories: 720,
-    options: [
-      { name: 'Spice Level', choices: ['Mild', 'Mitmita Heat', 'Extra Spicy'] },
-      { name: 'Gomen Style', choices: ['Standard Sauté', 'Extra Spiced Butter'] }
-    ]
-  },
-  {
-    id: '17',
-    name: 'Piazza Grilled Chicken',
-    description: 'Tender chicken breast marinated in herbs, grilled over open flame, served with garlic aioll and fresh Addis arugula.',
-    category: 'Burgers',
-    price: 6.25,
-    imageURL: 'https://images.unsplash.com/photo-1610614819513-58e34989848b?auto=format&fit=crop&q=80&w=800&h=600',
-    isAvailable: true,
-    rating: 4.8,
-    prepTime: '12-18 min',
-    calories: 540,
-    options: [
-      { name: 'Sauce', choices: ['Garlic Aioli', 'Spicy Mayo', 'Honey Mustard'] }
-    ]
-  },
-  {
-    id: '18',
-    name: 'Habesha Spice Wings',
-    description: '8 pieces of crispy wings tossed in a signature Awaze-infused buffalo sauce. Served with a side of cool yogurt dip.',
-    category: 'Sides',
-    price: 8.50,
-    imageURL: 'https://images.unsplash.com/photo-1567620832903-9fc6debc209f?auto=format&fit=crop&q=80&w=800&h=600',
-    isAvailable: true,
-    rating: 4.9,
-    prepTime: '15-20 min',
-    calories: 890,
-    options: [
-      { name: 'Glaze', choices: ['Honey Awaze', 'Classic Buffalo', 'Dry Rub'] }
+      { name: 'Bun Type', choices: ['Classic Sponge', 'Toasted Brioche', 'Protein Style (Lettuce)'] }
     ]
   },
   {
@@ -82,7 +37,8 @@ export const MOCK_FOODS: DetailedFoodItem[] = [
     prepTime: '4-6 min',
     calories: 520,
     options: [
-      { name: 'Intensity', choices: ['Standard', 'Triple Shot Boost'] }
+      { name: 'Size', choices: ['Small', 'Medium', 'Large'], priceModifiers: { 'Medium': 1.25, 'Large': 2.50 } },
+      { name: 'Intensity', choices: ['Standard', 'Triple Shot Boost'], priceModifiers: { 'Triple Shot Boost': 0.75 } }
     ]
   },
   {
@@ -97,7 +53,51 @@ export const MOCK_FOODS: DetailedFoodItem[] = [
     prepTime: '3-5 min',
     calories: 180,
     options: [
+      { name: 'Size', choices: ['Regular', 'Large', 'Bucket'], priceModifiers: { 'Large': 1.00, 'Bucket': 2.50 } },
       { name: 'Garnish', choices: ['Fresh Mint', 'Lemon Slice', 'None'] }
+    ]
+  },
+  {
+    id: '16',
+    name: 'Gomen Beef Burger',
+    description: 'A local Addis masterpiece. 100% beef patty topped with sautéed Gomen (collard greens), spiced butter, and melted provolone.',
+    category: 'Burgers',
+    price: 6.95,
+    imageURL: 'https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?auto=format&fit=crop&q=80&w=800&h=600',
+    isAvailable: true,
+    rating: 5.0,
+    prepTime: '10-15 min',
+    calories: 720,
+    options: [
+      { name: 'Size', choices: ['Standard', 'Large'], priceModifiers: { 'Large': 3.00 } },
+      { name: 'Spice Level', choices: ['Mild', 'Mitmita Heat', 'Extra Spicy'] }
+    ]
+  },
+  {
+    id: '17',
+    name: 'Piazza Grilled Chicken',
+    description: 'Tender chicken breast marinated in herbs, grilled over open flame, served with garlic aioll and fresh Addis arugula.',
+    category: 'Burgers',
+    price: 6.25,
+    imageURL: 'https://images.unsplash.com/photo-1610614819513-58e34989848b?auto=format&fit=crop&q=80&w=800&h=600',
+    isAvailable: true,
+    rating: 4.8,
+    prepTime: '12-18 min',
+    calories: 540
+  },
+  {
+    id: '18',
+    name: 'Habesha Spice Wings',
+    description: '8 pieces of crispy wings tossed in a signature Awaze-infused buffalo sauce. Served with a side of cool yogurt dip.',
+    category: 'Sides',
+    price: 8.50,
+    imageURL: 'https://images.unsplash.com/photo-1567620832903-9fc6debc209f?auto=format&fit=crop&q=80&w=800&h=600',
+    isAvailable: true,
+    rating: 4.9,
+    prepTime: '15-20 min',
+    calories: 890,
+    options: [
+      { name: 'Portion', choices: ['8 Pieces', '12 Pieces', '20 Pieces'], priceModifiers: { '12 Pieces': 4.00, '20 Pieces': 10.00 } }
     ]
   },
   {
@@ -110,7 +110,10 @@ export const MOCK_FOODS: DetailedFoodItem[] = [
     isAvailable: true,
     rating: 4.8,
     prepTime: '4-6 min',
-    calories: 210
+    calories: 210,
+    options: [
+      { name: 'Size', choices: ['Regular', 'Large'], priceModifiers: { 'Large': 1.50 } }
+    ]
   },
   {
     id: '24',
@@ -124,7 +127,8 @@ export const MOCK_FOODS: DetailedFoodItem[] = [
     prepTime: '7-10 min',
     calories: 780,
     options: [
-      { name: 'Cheese Level', choices: ['Extra Lava', 'Standard', 'Light'] }
+      { name: 'Portion', choices: ['Regular', 'Large'], priceModifiers: { 'Large': 2.00 } },
+      { name: 'Cheese Level', choices: ['Extra Lava', 'Standard', 'Light'], priceModifiers: { 'Extra Lava': 1.00 } }
     ]
   },
   {
@@ -152,8 +156,7 @@ export const MOCK_FOODS: DetailedFoodItem[] = [
     calories: 750,
     isSecretMenu: true,
     options: [
-      { name: 'Preparation', choices: ['Standard', 'Light', 'Well Done'] },
-      { name: 'Extras', choices: ['None', 'Extra Spread', 'Extra Cheese'] }
+      { name: 'Portion', choices: ['Regular', 'Large'], priceModifiers: { 'Large': 2.20 } }
     ]
   },
   {
@@ -166,10 +169,7 @@ export const MOCK_FOODS: DetailedFoodItem[] = [
     isAvailable: true,
     rating: 4.7,
     prepTime: '6-8 min',
-    calories: 820,
-    options: [
-      { name: 'Spice Level', choices: ['Mild', 'Hot', 'Nuclear'] }
-    ]
+    calories: 820
   },
   {
     id: '14',
@@ -182,10 +182,7 @@ export const MOCK_FOODS: DetailedFoodItem[] = [
     rating: 5.0,
     prepTime: '5-7 min',
     calories: 380,
-    isSecretMenu: true,
-    options: [
-      { name: 'Additions', choices: ['None', 'Grilled Onions', 'Yellow Peppers'] }
-    ]
+    isSecretMenu: true
   },
   {
     id: '12',
@@ -198,10 +195,7 @@ export const MOCK_FOODS: DetailedFoodItem[] = [
     rating: 4.9,
     prepTime: '4-6 min',
     calories: 420,
-    isSecretMenu: true,
-    options: [
-      { name: 'Scoops', choices: ['1 Scoop', '2 Scoops (Double)'] }
-    ]
+    isSecretMenu: true
   },
   {
     id: '9',
@@ -215,8 +209,7 @@ export const MOCK_FOODS: DetailedFoodItem[] = [
     prepTime: '2-3 min',
     calories: 160,
     options: [
-      { name: 'Ice Level', choices: ['Signature Crushed', 'Standard', 'No Ice'] },
-      { name: 'Sweetness', choices: ['Standard', 'Light Sweet'] }
+      { name: 'Size', choices: ['Small', 'Medium', 'Large'], priceModifiers: { 'Medium': 0.75, 'Large': 1.50 } }
     ]
   },
   {
@@ -230,7 +223,10 @@ export const MOCK_FOODS: DetailedFoodItem[] = [
     rating: 4.9,
     prepTime: '3-5 min',
     calories: 610,
-    isSecretMenu: true
+    isSecretMenu: true,
+    options: [
+      { name: 'Size', choices: ['Small', 'Medium', 'Large'], priceModifiers: { 'Medium': 1.25, 'Large': 2.50 } }
+    ]
   },
   {
     id: '11',
@@ -244,7 +240,7 @@ export const MOCK_FOODS: DetailedFoodItem[] = [
     prepTime: '1 min',
     calories: 140,
     options: [
-      { name: 'Ice Preference', choices: ['Crushed Ice', 'Regular Cubes', 'No Ice'] }
+      { name: 'Size', choices: ['Small', 'Medium', 'Large'], priceModifiers: { 'Medium': 0.50, 'Large': 1.00 } }
     ]
   },
   {
@@ -258,7 +254,10 @@ export const MOCK_FOODS: DetailedFoodItem[] = [
     rating: 4.9,
     prepTime: '3-5 min',
     calories: 590,
-    isSecretMenu: true
+    isSecretMenu: true,
+    options: [
+      { name: 'Size', choices: ['Small', 'Medium', 'Large'], priceModifiers: { 'Medium': 1.25, 'Large': 2.50 } }
+    ]
   },
   {
     id: '8',
@@ -272,8 +271,7 @@ export const MOCK_FOODS: DetailedFoodItem[] = [
     prepTime: '5-7 min',
     calories: 395,
     options: [
-      { name: 'Salt', choices: ['Standard Salt', 'No Salt', 'Extra Salt'] },
-      { name: 'Prep', choices: ['Standard', 'Light', 'Well Done'] }
+      { name: 'Size', choices: ['Regular', 'Large'], priceModifiers: { 'Large': 1.50 } }
     ]
   }
 ];

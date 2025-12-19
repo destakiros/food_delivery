@@ -1,3 +1,4 @@
+
 export enum UserRole {
   CUSTOMER = 'CUSTOMER',
   ADMIN = 'ADMIN'
@@ -38,6 +39,7 @@ export interface User {
 export interface FoodOption {
   name: string;
   choices: string[];
+  priceModifiers?: Record<string, number>;
 }
 
 export interface FoodItem {
@@ -56,6 +58,7 @@ export interface CartItem extends FoodItem {
   quantity: number;
   selectedOptions?: Record<string, string>;
   cartId: string;
+  basePrice: number; // Keep track of base price for recalculation if needed
 }
 
 export interface Order {

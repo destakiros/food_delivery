@@ -4,7 +4,7 @@ import { CartItem, FoodItem } from '../types';
 
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (food: FoodItem, selectedOptions?: Record<string, string>) => void;
+  addToCart: (food: FoodItem, selectedOptions?: Record<string, string>, finalPrice?: number) => void;
   removeFromCart: (cartId: string) => void;
   updateQuantity: (cartId: string, delta: number) => void;
   clearCart: () => void;
@@ -26,17 +26,19 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('qb_cart', JSON.stringify(cartItems));
   }, [cartItems]);
 
-  const addToCart = (food: FoodItem, selectedOptions?: Record<string, string>) => {
+  const addToCart = (food: FoodItem, selectedOptions?: Record<string, string>, finalPrice?: number) => {
     setCartItems(prev => {
       // Create a unique cartId based on the product ID and its selected options
       const optionsString = selectedOptions ? JSON.stringify(Object.entries(selectedOptions).sort()) : '';
       const cartId = `${food.id}-${optionsString}`;
 
+      const itemPrice = finalPrice !== undefined ? finalPrice : food.price;
+
       const existing = prev.find(item => item.cartId === cartId);
       if (existing) {
         return prev.map(item => item.cartId === cartId ? { ...item, quantity: item.quantity + 1 } : item);
       }
-      return [...prev, { ...food, quantity: 1, selectedOptions, cartId }];
+      return [...prev, { ...food, quantity: 1, selectedOptions, cartId, price: itemPrice, basePrice: food.price }];
     });
   };
 
