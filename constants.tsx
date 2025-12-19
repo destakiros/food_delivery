@@ -43,7 +43,7 @@ export const MOCK_FOODS: DetailedFoodItem[] = [
   {
     id: '17',
     name: 'Piazza Grilled Chicken',
-    description: 'Tender chicken breast marinated in herbs, grilled over open flame, served with garlic aioli and fresh Addis arugula.',
+    description: 'Tender chicken breast marinated in herbs, grilled over open flame, served with garlic aioll and fresh Addis arugula.',
     category: 'Burgers',
     price: 6.25,
     imageURL: 'https://images.unsplash.com/photo-1610614819513-58e34989848b?auto=format&fit=crop&q=80&w=800&h=600',
@@ -68,37 +68,6 @@ export const MOCK_FOODS: DetailedFoodItem[] = [
     calories: 890,
     options: [
       { name: 'Glaze', choices: ['Honey Awaze', 'Classic Buffalo', 'Dry Rub'] }
-    ]
-  },
-  {
-    id: '19',
-    name: 'Beef Sambusa Trio',
-    description: 'Three large, crispy hand-folded pastries filled with spiced prime beef, green chilies, and herbs.',
-    category: 'Sides',
-    price: 4.20,
-    imageURL: 'https://images.unsplash.com/photo-1601050633647-81a317507996?auto=format&fit=crop&q=80&w=800&h=600',
-    isAvailable: true,
-    rating: 5.0,
-    prepTime: '6-10 min',
-    calories: 410,
-    options: [
-      { name: 'Dip', choices: ['Sweet Chili', 'Spicy Senafitch', 'No Dip'] }
-    ]
-  },
-  {
-    id: '20',
-    name: 'Old Airport Avocado Shake',
-    description: 'The thickest avocado blend in Addis. Real avocado, organic milk, and a drizzle of Vimto for that classic look.',
-    category: 'Shakes',
-    price: 4.50,
-    imageURL: 'https://images.unsplash.com/photo-1543644009-1d407295a59e?auto=format&fit=crop&q=80&w=800&h=600',
-    isAvailable: true,
-    rating: 5.0,
-    prepTime: '5-8 min',
-    calories: 680,
-    options: [
-      { name: 'Sweetener', choices: ['Honey', 'Sugar', 'Sugar-Free'] },
-      { name: 'Extras', choices: ['Vimto Drizzle', 'No Drizzle'] }
     ]
   },
   {
