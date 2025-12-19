@@ -1,11 +1,21 @@
-import React, { Suspense, lazy } from 'react';
-import { HashRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
+
+import React, { Suspense, lazy, useEffect } from 'react';
+import { HashRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { ToastProvider } from './context/ToastContext';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import { UserRole } from './types';
+
+// Scroll to top on route change
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+};
 
 // Lazy load pages
 const HomePage = lazy(() => import('./pages/HomePage'));
@@ -29,6 +39,7 @@ const LoadingFallback = () => (
 const App: React.FC = () => {
   return (
     <HashRouter>
+      <ScrollToTop />
       <ToastProvider>
         <AuthProvider>
           <CartProvider>
