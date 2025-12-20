@@ -22,13 +22,17 @@ const HomePage = lazy(() => import('./pages/HomePage'));
 const MenuPage = lazy(() => import('./pages/MenuPage'));
 const FoodDetails = lazy(() => import('./pages/FoodDetails'));
 const CartPage = lazy(() => import('./pages/CartPage'));
+const OrderSuccess = lazy(() => import('./pages/OrderSuccess'));
 const OrdersPage = lazy(() => import('./pages/OrdersPage'));
 const OrderTracking = lazy(() => import('./pages/OrderTracking'));
+const Profile = lazy(() => import('./pages/Profile'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const Dashboard = lazy(() => import('./pages/admin/Dashboard'));
 const ManageOrders = lazy(() => import('./pages/admin/ManageOrders'));
 const ManageProducts = lazy(() => import('./pages/admin/ManageProducts'));
+const ManageUsers = lazy(() => import('./pages/admin/ManageUsers'));
+const ManageReviews = lazy(() => import('./pages/admin/ManageReviews'));
 
 const LoadingFallback = () => (
   <div className="min-h-screen flex items-center justify-center bg-white">
@@ -57,8 +61,10 @@ const App: React.FC = () => {
                     {/* Customer Protected Routes */}
                     <Route element={<ProtectedRoute />}>
                       <Route path="/cart" element={<CartPage />} />
+                      <Route path="/order-success" element={<OrderSuccess />} />
                       <Route path="/orders" element={<OrdersPage />} />
                       <Route path="/track/:id" element={<OrderTracking />} />
+                      <Route path="/profile" element={<Profile />} />
                     </Route>
 
                     {/* Admin Protected Routes */}
@@ -66,6 +72,8 @@ const App: React.FC = () => {
                       <Route path="/admin" element={<Dashboard />} />
                       <Route path="/admin/orders" element={<ManageOrders />} />
                       <Route path="/admin/products" element={<ManageProducts />} />
+                      <Route path="/admin/users" element={<ManageUsers />} />
+                      <Route path="/admin/reviews" element={<ManageReviews />} />
                     </Route>
 
                     <Route path="*" element={<Navigate to="/" replace />} />
@@ -76,7 +84,7 @@ const App: React.FC = () => {
                 <div className="max-w-[1600px] mx-auto px-8">
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-20 mb-24">
                     <div className="md:col-span-1">
-                      <h3 className="text-4xl font-black text-[#D62828] mb-8 tracking-tighter">IN-N-OUT <span className="text-white">EATS</span></h3>
+                      <h3 className="text-4xl font-black text-[#D62828] mb-8 tracking-tighter uppercase">IN-N-<span className="text-white">OUT</span></h3>
                       <p className="text-gray-500 font-bold leading-relaxed mb-10">Addis Ababa's gold standard for fresh, elite delivery. Quality you can taste in every single bite.</p>
                       <div className="flex space-x-6">
                         <a href="#" className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center hover:bg-[#D62828] transition-all"><i className="ph-fill ph-instagram-logo text-2xl"></i></a>
@@ -97,27 +105,27 @@ const App: React.FC = () => {
                     <div>
                       <h4 className="font-black text-xs uppercase tracking-[0.4em] mb-10 text-gray-400">Platform</h4>
                       <ul className="space-y-4 text-gray-500 font-bold">
-                        <li><Link to="/menu" className="hover:text-[#D62828] transition-colors">The Digital Menu</Link></li>
-                        <li><Link to="/" className="hover:text-[#D62828] transition-colors">Our Story</Link></li>
-                        <li><Link to="/" className="hover:text-[#D62828] transition-colors">Hygiene Protocol</Link></li>
-                        <li><Link to="/" className="hover:text-[#D62828] transition-colors">Partner with Us</Link></li>
+                        <li><Link to="/menu" className="hover:text-[#D62828] transition-colors">Our Menu</Link></li>
+                        <li><Link to="/" className="hover:text-[#D62828] transition-colors">The IN-N-OUT Way</Link></li>
+                        <li><Link to="/" className="hover:text-[#D62828] transition-colors">Quality Standard</Link></li>
+                        <li><Link to="/" className="hover:text-[#D62828] transition-colors">Addis Partners</Link></li>
                       </ul>
                     </div>
                     <div>
                       <h4 className="font-black text-xs uppercase tracking-[0.4em] mb-10 text-gray-400">Concierge</h4>
                       <ul className="space-y-4 text-gray-500 font-bold">
-                        <li><Link to="/" className="hover:text-[#D62828] transition-colors">Support Terminal</Link></li>
-                        <li><Link to="/" className="hover:text-[#D62828] transition-colors">Track Order</Link></li>
-                        <li><Link to="/" className="hover:text-[#D62828] transition-colors">Privacy Shield</Link></li>
-                        <li><Link to="/" className="hover:text-[#D62828] transition-colors">Refund Protocol</Link></li>
+                        <li><Link to="/" className="hover:text-[#D62828] transition-colors">Support Hub</Link></li>
+                        <li><Link to="/orders" className="hover:text-[#D62828] transition-colors">Live Tracking</Link></li>
+                        <li><Link to="/" className="hover:text-[#D62828] transition-colors">Privacy Policy</Link></li>
+                        <li><Link to="/" className="hover:text-[#D62828] transition-colors">Contact Us</Link></li>
                       </ul>
                     </div>
                   </div>
                   <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
                      <p className="text-gray-700 font-black text-[10px] uppercase tracking-[0.3em]">&copy; 2025 IN-N-OUT ADDIS LEGACY. ALL RIGHTS RESERVED.</p>
                      <div className="flex gap-12 text-[10px] font-black text-gray-700 uppercase tracking-widest">
+                        <span>QUALITY YOU CAN TASTE</span>
                         <span>EST. ADDIS ABABA, ETHIOPIA</span>
-                        <span>QUALITY SERVICE 24/7</span>
                      </div>
                   </div>
                 </div>

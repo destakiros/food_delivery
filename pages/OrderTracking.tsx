@@ -1,15 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { GoogleGenAI } from "@google/genai";
 import { Order, OrderStatus, Coordinates } from '../types';
 import { apiService } from '../services/api';
-import { useToast } from '../context/ToastContext';
 
 const OrderTracking: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { showToast } = useToast();
   const [order, setOrder] = useState<Order | null>(null);
-  // Addis Ababa Coordinates: 9.0300° N, 38.7400° E
   const [riderPos, setRiderPos] = useState<Coordinates>({ lat: 9.0300, lng: 38.7400 }); 
   const [groundingLinks, setGroundingLinks] = useState<{title: string, uri: string}[]>([]);
   const [nearbyLandmark, setNearbyLandmark] = useState<string>("");
@@ -36,7 +34,6 @@ const OrderTracking: React.FC = () => {
 
   useEffect(() => {
     fetchOrder();
-    
     const moveInterval = setInterval(() => {
       setRiderPos(prev => ({
         lat: prev.lat + 0.0003,
@@ -45,17 +42,19 @@ const OrderTracking: React.FC = () => {
       setEta(prev => Math.max(1, prev - 0.1));
       setProgress(prev => Math.min(100, prev + 0.4));
     }, 5000);
-
     return () => clearInterval(moveInterval);
   }, [id]);
 
   useEffect(() => {
     const fetchGrounding = async () => {
+      if (!process.env.API_KEY) return;
+      
       try {
         const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
         const response = await ai.models.generateContent({
+          // Use standard gemini-2.5-flash for Maps grounding as per instructions
           model: "gemini-2.5-flash",
-          contents: `What interesting landmarks or prominent buildings are at these Addis Ababa coordinates: ${riderPos.lat}, ${riderPos.lng}? Give a brief, sophisticated 20-word summary for a hungry customer tracking their food in Ethiopia.`,
+          contents: `What interesting landmarks or prominent buildings are at these coordinates in Addis Ababa: ${riderPos.lat}, ${riderPos.lng}? Give a brief, sophisticated summary for a hungry customer tracking their food.`,
           config: {
             tools: [{ googleMaps: {} }],
             toolConfig: {
@@ -69,7 +68,7 @@ const OrderTracking: React.FC = () => {
           },
         });
 
-        setNearbyLandmark(response.text || "");
+        setNearbyLandmark(response.text || "Scanning local landmarks...");
         
         const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
         if (chunks) {
@@ -86,7 +85,7 @@ const OrderTracking: React.FC = () => {
       }
     };
 
-    const debounce = setTimeout(fetchGrounding, 2000);
+    const debounce = setTimeout(fetchGrounding, 3000);
     return () => clearTimeout(debounce);
   }, [riderPos]);
 
@@ -112,14 +111,8 @@ const OrderTracking: React.FC = () => {
       </header>
 
       <div className="max-w-[1600px] mx-auto w-full grid lg:grid-cols-3 gap-12 flex-grow">
-        {/* Map Visualization */}
         <div className="lg:col-span-2 bg-gray-900 rounded-[4rem] relative overflow-hidden border border-white/5 shadow-2xl min-h-[500px]">
           <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'linear-gradient(#ffffff11 1px, transparent 1px), linear-gradient(90deg, #ffffff11 1px, transparent 1px)', backgroundSize: '60px 60px' }}></div>
-          
-          <svg className="absolute inset-0 w-full h-full pointer-events-none">
-            <path d="M 100 100 Q 400 200 800 600" fill="none" stroke="#D62828" strokeWidth="4" strokeDasharray="10 10" opacity="0.3" />
-          </svg>
-
           <div 
             className="absolute z-20 transition-all duration-1000 ease-linear"
             style={{ 
@@ -140,18 +133,14 @@ const OrderTracking: React.FC = () => {
             <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-3xl border-4 border-gray-950">
                <i className="ph-fill ph-house text-gray-950 text-xl"></i>
             </div>
-            <div className="mt-4 bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl border border-white/20 text-[10px] font-black uppercase tracking-widest text-center">
-               Destination
-            </div>
           </div>
 
           <div className="absolute bottom-10 left-10 z-30 flex flex-col gap-4">
              <div className="bg-gray-950/80 backdrop-blur-xl p-6 rounded-[2rem] border border-white/10 shadow-2xl max-w-sm">
                 <p className="text-[10px] font-black text-[#D62828] uppercase tracking-[0.3em] mb-3">Addis Grounding Context</p>
                 <p className="text-sm font-bold text-gray-300 italic mb-4">
-                  {nearbyLandmark || "Triangulating local Addis landmarks..."}
+                  {nearbyLandmark || "Triangulating local context..."}
                 </p>
-                
                 {groundingLinks.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {groundingLinks.map((link, i) => (
@@ -170,26 +159,22 @@ const OrderTracking: React.FC = () => {
           </div>
         </div>
 
-        {/* Dashboard Side */}
         <div className="space-y-12">
            <div className="bg-white/5 rounded-[4rem] p-12 border border-white/10">
               <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.5em] mb-8">Delivery Status</p>
-              
               <div className="flex items-center justify-between mb-12">
                  <div>
                     <h4 className="text-5xl font-black tracking-tighter text-[#FFCA3A]">{Math.ceil(eta)}</h4>
-                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest">Mins to Bole/Around</p>
+                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest">Mins to Bole</p>
                  </div>
                  <div className="text-right">
                     <h4 className="text-5xl font-black tracking-tighter text-white">{progress.toFixed(0)}%</h4>
-                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest">Journey Complete</p>
+                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest">Complete</p>
                  </div>
               </div>
-
               <div className="relative h-4 bg-white/5 rounded-full overflow-hidden mb-12">
-                 <div className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#D62828] to-[#FFCA3A] transition-all duration-1000 shadow-[0_0_20px_rgba(214,40,40,0.5)]" style={{ width: `${progress}%` }}></div>
+                 <div className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#D62828] to-[#FFCA3A] transition-all duration-1000" style={{ width: `${progress}%` }}></div>
               </div>
-
               <div className="space-y-6">
                  <div className="flex items-center gap-6 p-6 bg-white/5 rounded-[2rem] border border-white/5">
                     <div className="w-14 h-14 bg-[#D62828] rounded-2xl flex items-center justify-center text-2xl">
@@ -211,18 +196,13 @@ const OrderTracking: React.FC = () => {
                  </div>
               </div>
            </div>
-
            <div className="bg-gray-900 rounded-[4rem] p-12 border border-white/5 flex items-center gap-8">
-              <img src="https://ui-avatars.com/api/?name=Addis+Courier&background=D62828&color=fff&bold=true" className="w-24 h-24 rounded-[2.5rem] shadow-2xl" alt="Rider" />
+              <img src="https://ui-avatars.com/api/?name=Swift&background=D62828&color=fff&bold=true" className="w-24 h-24 rounded-[2.5rem] shadow-2xl" alt="Rider" />
               <div>
-                 <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.5em] mb-2">Elite Addis Courier</p>
-                 <h4 className="text-2xl font-black tracking-tighter text-white uppercase">Dawit "Swift"</h4>
+                 <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.5em] mb-2">Elite Courier</p>
+                 <h4 className="text-2xl font-black tracking-tighter text-white uppercase">Dawit</h4>
                  <div className="flex gap-2 text-[#FFCA3A] mt-2">
-                    <i className="ph-fill ph-star"></i>
-                    <i className="ph-fill ph-star"></i>
-                    <i className="ph-fill ph-star"></i>
-                    <i className="ph-fill ph-star"></i>
-                    <i className="ph-fill ph-star"></i>
+                    <i className="ph-fill ph-star"></i><i className="ph-fill ph-star"></i><i className="ph-fill ph-star"></i><i className="ph-fill ph-star"></i><i className="ph-fill ph-star"></i>
                  </div>
               </div>
            </div>

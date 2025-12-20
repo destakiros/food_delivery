@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
@@ -36,10 +37,14 @@ const FoodCard: React.FC<FoodCardProps> = ({ food }) => {
     <div className="food-card-premium group">
       <Link to={`/food/${food.id}`} className="block h-full flex flex-col">
         {/* Image Section */}
-        <div className="relative h-72 overflow-hidden">
+        <div className="relative h-72 overflow-hidden bg-gray-100">
           <img 
             src={food.imageURL} 
             alt={food.name} 
+            loading="lazy"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=800';
+            }}
             className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
           />
           
@@ -63,7 +68,7 @@ const FoodCard: React.FC<FoodCardProps> = ({ food }) => {
             </div>
           )}
           
-          <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-md px-4 py-2 rounded-2xl flex items-center gap-2 shadow-xl border border-gray-50">
+          <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-md px-4 py-2 rounded-2xl flex items-center gap-2 shadow-xl border border-gray-100">
             <i className="ph-fill ph-star text-[#FFCA3A] text-lg"></i>
             <span className="text-gray-900 font-black text-sm">{food.rating}</span>
           </div>

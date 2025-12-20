@@ -8,7 +8,8 @@ export enum OrderStatus {
   CONFIRMED = 'Confirmed',
   PREPARING = 'Preparing',
   OUT_FOR_DELIVERY = 'Out for Delivery',
-  DELIVERED = 'Delivered'
+  DELIVERED = 'Delivered',
+  CANCELLED = 'Cancelled'
 }
 
 export interface Coordinates {
@@ -27,6 +28,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  phone?: string;
   role: UserRole;
   address?: string;
   location?: Coordinates;
@@ -58,7 +60,7 @@ export interface CartItem extends FoodItem {
   quantity: number;
   selectedOptions?: Record<string, string>;
   cartId: string;
-  basePrice: number; // Keep track of base price for recalculation if needed
+  basePrice: number;
 }
 
 export interface Order {

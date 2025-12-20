@@ -1,217 +1,150 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { MOCK_FOODS, CATEGORIES } from '../constants';
+
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { MOCK_FOODS } from '../constants';
 import FoodCard from '../components/FoodCard';
+import { GoogleGenAI } from "@google/genai";
 
 const HomePage: React.FC = () => {
-  const navigate = useNavigate();
   const featuredFoods = MOCK_FOODS.slice(0, 4); 
-  
-  const [stats, setStats] = useState({ orders: 0, cities: 0, rating: 0 });
+  const [moodRecommendation, setMoodRecommendation] = useState<string | null>(null);
+  const [isMoodLoading, setIsMoodLoading] = useState(false);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setStats({ orders: 1284, cities: 1, rating: 4.9 });
-    }, 500);
-    return () => clearTimeout(timer);
-  }, []);
+  const handleMoodSelect = async (mood: string) => {
+    setIsMoodLoading(true);
+    setMoodRecommendation(null);
+    try {
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const menuStr = MOCK_FOODS.map(f => f.name).join(', ');
+      const response = await ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: `A customer is feeling "${mood}". Based on this menu: ${menuStr}, pick ONE item and write a persuasive 15-word endorsement focusing on taste and freshness.`,
+      });
+      setMoodRecommendation(response.text || "Discover your perfect match on our menu today.");
+    } catch (error) {
+      console.error("AI Mood Error:", error);
+      setMoodRecommendation("Whatever your mood, we have the perfect dish waiting for you.");
+    } finally {
+      setIsMoodLoading(false);
+    }
+  };
 
   return (
-    <div className="overflow-hidden bg-[#fafafa]">
-      {/* Cinematic Hero Section */}
-      <header className="relative h-[95vh] min-h-[850px] flex items-center justify-center overflow-hidden">
+    <div className="overflow-hidden">
+      {/* Cinematic Food-Centric Hero */}
+      <header className="relative h-screen min-h-[900px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-gray-950">
            <img 
-            src="https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?auto=format&fit=crop&q=90&w=2000" 
-            className="w-full h-full object-cover opacity-60 animate-slow-zoom"
+            src="https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?auto=format&fit=crop&q=90&w=2400" 
+            className="w-full h-full object-cover opacity-60 dark:opacity-40 animate-slow-zoom"
             alt="Hero Background"
            />
-           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-gray-950/40 to-gray-950"></div>
+           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-gray-950/20 to-gray-950"></div>
         </div>
         
-        <div className="relative z-10 text-center max-w-[1600px] px-8">
-          <div className="inline-flex items-center space-x-4 bg-white/5 backdrop-blur-3xl px-8 py-3 rounded-full mb-10 border border-white/10 animate-fade-in shadow-2xl">
-             <span className="flex h-2.5 w-2.5 rounded-full bg-[#FFCA3A] animate-ping"></span>
-             <span className="text-[10px] font-black text-white uppercase tracking-[0.5em]">Addis Ababa's Most Loved Burgers</span>
+        <div className="relative z-10 text-center max-w-ultra px-10">
+          <div className="inline-flex items-center space-x-6 bg-white/5 backdrop-blur-3xl px-10 py-4 rounded-full mb-12 border border-white/10 animate-fade-in shadow-2xl">
+             <span className="flex h-3 w-3 rounded-full bg-ino-yellow animate-ping"></span>
+             <span className="text-[11px] font-black text-white uppercase tracking-[0.5em]">The IN-N-OUT Addis Legacy</span>
           </div>
-          
-          <h1 className="text-7xl md:text-[180px] font-black mb-8 text-white tracking-tighter leading-[0.85] uppercase select-none">
-            Elite <span className="text-[#D62828]">Taste</span><br/>Delivered.
+          <h1 className="text-[8vw] lg:text-[9rem] font-black mb-10 text-white tracking-tighter leading-[0.85] uppercase select-none">
+            ALWAYS <span className="text-ino-red">FRESH.</span><br/>NEVER FROZEN.<br/><span className="text-ino-yellow">PURE ADDIS PRIDE.</span>
           </h1>
-
-          <p className="text-lg md:text-2xl text-gray-300 font-medium mb-16 max-w-2xl mx-auto leading-relaxed italic opacity-90">
-            Hand-crafted in our local hub. No microwaves. No freezers. Just fresh ingredients delivered from Bole to Piazza.
+          <p className="text-xl lg:text-3xl text-gray-300 font-medium mb-20 max-w-4xl mx-auto leading-relaxed italic opacity-80">
+            Sizzling beef, toasted buns, and garden-fresh produce. Hand-crafted in our local hub and delivered to your coordinates in record time.
           </p>
-          
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
             <Link 
               to="/menu" 
-              className="group px-14 py-6 bg-[#D62828] text-white rounded-[2rem] font-black text-xl uppercase tracking-[0.2em] shadow-2xl hover:bg-red-700 transition-all hover:scale-105 active:scale-95 flex items-center gap-4 glow-red"
+              className="group px-16 py-7 bg-ino-red text-white rounded-[2.5rem] font-black text-2xl uppercase tracking-[0.2em] shadow-2xl hover:bg-red-700 transition-all hover:scale-105 active:scale-95 flex items-center gap-6"
             >
               <span>Order Now</span>
-              <i className="ph-bold ph-shopping-bag group-hover:translate-y-[-2px] transition-transform"></i>
+              <i className="ph-bold ph-arrow-right group-hover:translate-x-2 transition-transform"></i>
             </Link>
-            <button className="px-14 py-6 bg-white/10 backdrop-blur-xl text-white rounded-[2rem] font-black text-xl uppercase tracking-[0.2em] border border-white/20 hover:bg-white/20 transition-all">
-              Our Legacy
+            <button 
+              onClick={() => document.getElementById('ai-recommender')?.scrollIntoView({ behavior: 'smooth' })}
+              className="px-16 py-7 bg-white/10 backdrop-blur-xl text-white border border-white/20 rounded-[2.5rem] font-black text-2xl uppercase tracking-[0.2em] hover:bg-white/20 transition-all"
+            >
+              AI Cravings
             </button>
           </div>
         </div>
       </header>
 
-      {/* Trust Signals Bar */}
-      <div className="bg-white py-12 border-y border-gray-100">
-        <div className="max-w-[1600px] mx-auto px-8 flex flex-wrap justify-center md:justify-between gap-12 text-gray-950">
-           <div className="flex items-center gap-6">
-              <i className="ph-fill ph-timer text-4xl text-[#D62828]"></i>
-              <div>
-                 <p className="font-black uppercase tracking-widest text-[10px]">45 Min Delivery</p>
-                 <p className="text-gray-500 font-bold text-sm">Across Addis Grid</p>
-              </div>
+      {/* Brand Strips */}
+      <div className="bg-white dark:bg-gray-950 py-16 border-y border-gray-100 dark:border-white/5">
+        <div className="max-w-ultra mx-auto px-10 grid grid-cols-1 md:grid-cols-3 gap-16 text-gray-950 dark:text-white">
+           <div className="flex items-center gap-8 border-r border-gray-100 dark:border-white/5">
+              <i className="ph-fill ph-fire text-5xl text-ino-red"></i>
+              <div><p className="font-black uppercase tracking-widest text-[11px] mb-1">Flame-Grilled</p><p className="text-gray-500 dark:text-gray-400 font-bold text-lg tracking-tight">Char-Broiled Perfection</p></div>
            </div>
-           <div className="flex items-center gap-6">
-              <i className="ph-fill ph-leaf text-4xl text-green-500"></i>
-              <div>
-                 <p className="font-black uppercase tracking-widest text-[10px]">100% Fresh</p>
-                 <p className="text-gray-500 font-bold text-sm">No Freezers Used</p>
-              </div>
+           <div className="flex items-center gap-8 border-r border-gray-100 dark:border-white/5">
+              <i className="ph-fill ph-bowl-food text-5xl text-green-500"></i>
+              <div><p className="font-black uppercase tracking-widest text-[11px] mb-1">Local Sourcing</p><p className="text-gray-500 dark:text-gray-400 font-bold text-lg tracking-tight">Addis-Grown Organic Greens</p></div>
            </div>
-           <div className="flex items-center gap-6">
-              <i className="ph-fill ph-shield-check text-4xl text-blue-500"></i>
-              <div>
-                 <p className="font-black uppercase tracking-widest text-[10px]">Elite Safety</p>
-                 <p className="text-gray-500 font-bold text-sm">Sealed Packaging</p>
-              </div>
-           </div>
-           <div className="flex items-center gap-6">
-              <i className="ph-fill ph-star text-4xl text-[#FFCA3A]"></i>
-              <div>
-                 <p className="font-black uppercase tracking-widest text-[10px]">4.9 Rating</p>
-                 <p className="text-gray-500 font-bold text-sm">Top Rated in Addis</p>
-              </div>
+           <div className="flex items-center gap-8">
+              <i className="ph-fill ph-crown text-5xl text-ino-yellow"></i>
+              <div><p className="font-black uppercase tracking-widest text-[11px] mb-1">Elite Quality</p><p className="text-gray-500 dark:text-gray-400 font-bold text-lg tracking-tight">The #1 Choice in Ethiopia</p></div>
            </div>
         </div>
       </div>
 
-      {/* Featured Collection */}
-      <section className="py-32 px-8">
-        <div className="max-w-[1600px] mx-auto">
-          <header className="flex flex-col md:flex-row items-end justify-between mb-20 gap-8">
-            <div className="max-w-4xl">
-              <h2 className="text-5xl md:text-8xl font-black text-gray-900 tracking-tighter uppercase mb-6 leading-none">
-                Addis <span className="text-[#D62828]">Favorites</span>
-              </h2>
-              <p className="text-xl text-gray-500 font-bold max-w-xl">The most ordered dishes from our central kitchen this week.</p>
+      {/* AI Recommendation Section */}
+      <section id="ai-recommender" className="py-40 px-10 bg-gray-50 dark:bg-black">
+        <div className="max-w-ultra mx-auto">
+          <div className="bg-white dark:bg-gray-950 rounded-[5rem] p-20 shadow-3xl border border-gray-100 dark:border-white/5 flex flex-col xl:flex-row items-center gap-24">
+            <div className="xl:w-1/3 text-center xl:text-left">
+              <h2 className="text-6xl font-black text-gray-900 dark:text-white tracking-tighter uppercase mb-8 leading-tight">Pick Your <span className="text-ino-red">Vibe.</span></h2>
+              <p className="text-2xl text-gray-500 dark:text-gray-400 font-bold italic mb-12">How are you feeling today? Let our AI Chef match your mood to the perfect meal.</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-2 gap-6">
+                {['Hungry', 'Healthy', 'Adventurous', 'Comfort', 'Late Night', 'Sweet'].map(mood => (
+                  <button 
+                    key={mood}
+                    onClick={() => handleMoodSelect(mood)}
+                    className="py-6 bg-gray-50 dark:bg-white/5 rounded-3xl font-black text-xs uppercase tracking-widest text-gray-400 hover:text-ino-red dark:hover:text-white hover:bg-red-50 dark:hover:bg-red-600 transition-all border border-transparent"
+                  >
+                    {mood}
+                  </button>
+                ))}
+              </div>
             </div>
-            <Link to="/menu" className="text-xl font-black text-[#D62828] uppercase tracking-widest hover:underline flex items-center gap-4 group">
-              View Full Menu <i className="ph-bold ph-arrow-right group-hover:translate-x-2 transition-transform"></i>
-            </Link>
+            
+            <div className="xl:w-2/3 w-full min-h-[500px] bg-gray-900 rounded-[4rem] p-16 relative overflow-hidden flex items-center justify-center text-center">
+              <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-ino-red/10 blur-[150px] rounded-full"></div>
+              {isMoodLoading ? (
+                <div className="flex flex-col items-center gap-8">
+                  <div className="animate-spin w-20 h-20 border-t-4 border-ino-red rounded-full"></div>
+                  <p className="text-gray-500 font-black uppercase tracking-widest text-sm">Matching Cravings...</p>
+                </div>
+              ) : moodRecommendation ? (
+                <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
+                  <i className="ph-fill ph-cooking-pot text-ino-yellow text-7xl mb-10"></i>
+                  <p className="text-4xl lg:text-7xl font-black text-white tracking-tighter mb-12 leading-[1.1]">{moodRecommendation}</p>
+                  <Link to="/menu" className="inline-flex items-center gap-4 px-14 py-6 bg-ino-red text-white rounded-full font-black text-xl uppercase tracking-widest hover:scale-110 transition-all">
+                    <span>Grab It Now</span><i className="ph-bold ph-arrow-right"></i>
+                  </Link>
+                </div>
+              ) : (
+                <div className="text-gray-600 italic font-black text-3xl opacity-30 uppercase tracking-tighter">"Awaiting Cravings..."</div>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Section */}
+      <section className="py-40 px-10 dark:bg-black">
+        <div className="max-w-ultra mx-auto">
+          <header className="flex flex-col md:flex-row items-end justify-between mb-24 gap-12">
+            <div className="max-w-5xl">
+              <h2 className="text-7xl md:text-9xl font-black text-gray-900 dark:text-white tracking-tighter uppercase mb-8 leading-none">The <span className="text-ino-red">Hall of Taste</span></h2>
+              <p className="text-2xl text-gray-500 dark:text-gray-400 font-bold max-w-2xl">Daily favorites hand-picked for their exceptional flavor profiles.</p>
+            </div>
+            <Link to="/menu" className="px-12 py-5 border-2 border-ino-red text-ino-red dark:text-white dark:border-white/20 rounded-full font-black uppercase tracking-widest hover:bg-ino-red hover:text-white transition-all">Full Menu</Link>
           </header>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
-            {featuredFoods.map(food => (
-              <FoodCard key={food.id} food={food} />
-            ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-16">
+            {featuredFoods.map(food => (<FoodCard key={food.id} food={food} />))}
           </div>
-        </div>
-      </section>
-
-      {/* How it Works Section */}
-      <section className="py-32 px-8 bg-gray-900 text-white rounded-[4rem] mx-4 md:mx-12 overflow-hidden relative">
-        <div className="absolute top-0 right-0 w-1/3 h-full bg-[#D62828]/10 blur-[120px] rounded-full"></div>
-        <div className="max-w-[1600px] mx-auto relative z-10">
-          <div className="text-center mb-24">
-            <p className="text-[#FFCA3A] font-black uppercase tracking-[0.5em] text-xs mb-4">The Pipeline</p>
-            <h2 className="text-6xl md:text-8xl font-black uppercase tracking-tighter">How we <span className="text-[#D62828]">Roll</span></h2>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-24">
-            <div className="text-center group">
-               <div className="w-24 h-24 bg-white/5 rounded-3xl flex items-center justify-center mx-auto mb-10 group-hover:bg-[#D62828] transition-all rotate-3">
-                  <i className="ph ph-hand-pointing text-4xl text-[#D62828] group-hover:text-white"></i>
-               </div>
-               <h3 className="text-2xl font-black uppercase mb-4 tracking-tighter">1. Select Dish</h3>
-               <p className="text-gray-400 font-medium leading-relaxed">Browse our curated archive of burgers, shakes, and sides designed for Addis elite.</p>
-            </div>
-            <div className="text-center group">
-               <div className="w-24 h-24 bg-white/5 rounded-3xl flex items-center justify-center mx-auto mb-10 group-hover:bg-[#D62828] transition-all -rotate-6">
-                  <i className="ph ph-cooking-pot text-4xl text-[#D62828] group-hover:text-white"></i>
-               </div>
-               <h3 className="text-2xl font-black uppercase mb-4 tracking-tighter">2. Expert Prep</h3>
-               <p className="text-gray-400 font-medium leading-relaxed">Our chefs prepare your order fresh using 100% premium local ingredients and no heat lamps.</p>
-            </div>
-            <div className="text-center group">
-               <div className="w-24 h-24 bg-white/5 rounded-3xl flex items-center justify-center mx-auto mb-10 group-hover:bg-[#D62828] transition-all rotate-12">
-                  <i className="ph ph-moped text-4xl text-[#D62828] group-hover:text-white"></i>
-               </div>
-               <h3 className="text-2xl font-black uppercase mb-4 tracking-tighter">3. Rapid Delivery</h3>
-               <p className="text-gray-400 font-medium leading-relaxed">Our specialized Addis courier team navigates the fastest routes to reach your door in under 45 mins.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Local Testimonials */}
-      <section className="py-40 px-8">
-        <div className="max-w-[1200px] mx-auto">
-          <div className="text-center mb-24">
-             <h2 className="text-5xl font-black text-gray-900 tracking-tighter uppercase mb-4 leading-tight">Word on the <span className="text-[#D62828]">Streets</span></h2>
-             <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">Verified Addis Critiques</p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <div className="bg-white p-12 rounded-[3rem] border border-gray-100 shadow-xl relative">
-               <i className="ph-fill ph-quotes absolute top-10 right-10 text-gray-50 text-8xl -z-10"></i>
-               <div className="flex items-center gap-6 mb-8">
-                  <img src="https://ui-avatars.com/api/?name=Sara+K&background=D62828&color=fff&bold=true" className="w-16 h-16 rounded-2xl" alt="" />
-                  <div>
-                    <h4 className="font-black uppercase tracking-tighter">Sara K.</h4>
-                    <p className="text-xs text-gray-400 font-bold uppercase">Bole Resident</p>
-                  </div>
-               </div>
-               <p className="text-lg text-gray-600 font-medium italic leading-relaxed">"The Gomen Beef Burger is a revelation. I've lived in Addis all my life and this is the first time someone got local fusion perfectly right."</p>
-            </div>
-            <div className="bg-white p-12 rounded-[3rem] border border-gray-100 shadow-xl">
-               <div className="flex items-center gap-6 mb-8">
-                  <img src="https://ui-avatars.com/api/?name=Dawit+M&background=D62828&color=fff&bold=true" className="w-16 h-16 rounded-2xl" alt="" />
-                  <div>
-                    <h4 className="font-black uppercase tracking-tighter">Dawit M.</h4>
-                    <p className="text-xs text-gray-400 font-bold uppercase">Piazza Office Hub</p>
-                  </div>
-               </div>
-               <p className="text-lg text-gray-600 font-medium italic leading-relaxed">"Delivery is incredibly fast. They actually beat the 45-minute promise during rush hour near Meskel Square. Best lunch in the city."</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* App Promo Section */}
-      <section className="py-32 px-8 bg-[#D62828] text-white">
-        <div className="max-w-[1600px] mx-auto grid lg:grid-cols-2 items-center gap-24">
-           <div>
-              <h2 className="text-6xl md:text-8xl font-black tracking-tighter uppercase mb-8 leading-none">The Kitchen in Your <span className="text-[#FFCA3A]">Pocket</span></h2>
-              <p className="text-2xl font-bold opacity-90 mb-12 max-w-xl">Download the IN-N-OUT Addis app for exclusive secret menu access and real-time satellite tracking.</p>
-              <div className="flex flex-wrap gap-6">
-                 <button className="bg-gray-950 px-10 py-5 rounded-2xl flex items-center gap-4 hover:scale-105 transition-all">
-                    <i className="ph-fill ph-app-store-logo text-3xl"></i>
-                    <div className="text-left">
-                       <p className="text-[10px] uppercase font-black opacity-60">Download on</p>
-                       <p className="text-lg font-black uppercase">App Store</p>
-                    </div>
-                 </button>
-                 <button className="bg-gray-950 px-10 py-5 rounded-2xl flex items-center gap-4 hover:scale-105 transition-all">
-                    <i className="ph-fill ph-google-play-logo text-3xl"></i>
-                    <div className="text-left">
-                       <p className="text-[10px] uppercase font-black opacity-60">Get it on</p>
-                       <p className="text-lg font-black uppercase">Google Play</p>
-                    </div>
-                 </button>
-              </div>
-           </div>
-           <div className="relative">
-              <div className="bg-white/10 backdrop-blur-3xl rounded-[4rem] p-12 border border-white/10 animate-float">
-                 <img src="https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?auto=format&fit=crop&q=80&w=800" className="rounded-[2.5rem] shadow-3xl" alt="Mobile App View" />
-              </div>
-           </div>
         </div>
       </section>
     </div>

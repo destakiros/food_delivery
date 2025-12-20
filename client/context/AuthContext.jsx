@@ -1,28 +1,13 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User, UserRole, Notification } from '../types';
-import { apiService } from '../services/api';
 
-interface AuthContextType {
-  user: User | null;
-  isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
-  logout: () => void;
-  updateUser: (userData: Partial<User>) => void;
-  addNotificationToUser: (userId: string, message: string) => void;
-  markNotificationsAsRead: () => void;
-  isDemoMode: boolean;
-  allUsers: User[];
-}
+const AuthContext = createContext(undefined);
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDemoMode, setIsDemoMode] = useState(false);
-  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [allUsers, setAllUsers] = useState([]);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('qb_user');
@@ -31,13 +16,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (savedAllUsers) {
       setAllUsers(JSON.parse(savedAllUsers));
     } else {
-      const initialUsers: User[] = [
+      const initialUsers = [
         {
           id: 'demo-1',
           name: 'John Doe',
           email: 'customer@example.com',
           phone: '+251 911 223344',
-          role: UserRole.CUSTOMER,
+          role: 'CUSTOMER',
           status: 'Active',
           notifications: []
         }
@@ -64,9 +49,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     updateUser({ notifications: updatedNotifs });
 
     const demoUsers = JSON.parse(localStorage.getItem('demo_users') || '[]');
-    const updatedUsers = demoUsers.map((u: any) => {
+    const updatedUsers = demoUsers.map((u) => {
       if (u.id === user.id) {
-        return { ...u, notifications: u.notifications.map((n: any) => ({ ...n, read: true })) };
+        return { ...u, notifications: (u.notifications || []).map((n) => ({ ...n, read: true })) };
       }
       return u;
     });
@@ -74,25 +59,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAllUsers(updatedUsers);
   };
 
-  const login = async (email: string, password: string) => {
+  const login = async (email, password) => {
     if (email === 'admin@gmail.com' && password === 'admin123') {
       const adminData = {
         id: 'admin-primary',
         name: 'Super Admin',
         email: 'admin@gmail.com',
-        role: UserRole.ADMIN,
+        role: 'ADMIN',
         token: 'demo-token',
-        status: 'Active' as const,
+        status: 'Active',
         notifications: []
       };
-      setUser(adminData as any);
+      setUser(adminData);
       localStorage.setItem('qb_user', JSON.stringify(adminData));
       setIsDemoMode(true);
       return;
     }
 
     const demoUsers = JSON.parse(localStorage.getItem('demo_users') || '[]');
-    const foundUser = demoUsers.find((u: any) => u.email === email && u.password === password);
+    const foundUser = demoUsers.find((u) => u.email === email && u.password === password);
 
     if (foundUser) {
       const userData = { ...foundUser, token: 'demo-token' };
@@ -101,36 +86,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('qb_user', JSON.stringify(userData));
       setIsDemoMode(true);
     } else {
-      const data = await apiService.post('/auth/login', { email, password });
-      if (data) {
-        const userData = {
-          id: data._id || data.id,
-          name: data.name,
-          email: data.email,
-          role: data.role,
-          token: data.token,
-          status: 'Active',
-          notifications: data.notifications || []
-        };
-        setUser(userData as any);
-        localStorage.setItem('qb_user', JSON.stringify(userData));
-        setIsDemoMode(false);
-      } else {
-        throw new Error('Invalid email or password');
-      }
+      // In a real app, this would hit the API
+      throw new Error('Invalid email or password');
     }
   };
 
-  const register = async (name: string, email: string, password: string) => {
+  const register = async (name, email, password) => {
     const newUser = {
       id: 'demo-' + Date.now(),
       name,
       email,
       password,
       phone: '+251 900 000000',
-      role: UserRole.CUSTOMER,
-      status: 'Active' as const,
-      notifications: [{ id: '1', message: 'Welcome to FOOD-GRID!', time: 'Just now', read: false }]
+      role: 'CUSTOMER',
+      status: 'Active',
+      notifications: [{ id: '1', message: 'Selam! Welcome to the IN-N-OUT family. We are so happy to have you here in Addis!', time: 'Just now', read: false }]
     };
     
     const demoUsers = JSON.parse(localStorage.getItem('demo_users') || '[]');
@@ -139,15 +109,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAllUsers(demoUsers);
     
     const sessionUser = { ...newUser, token: 'demo-token' };
-    delete (sessionUser as any).password;
-    setUser(sessionUser as any);
+    delete sessionUser.password;
+    setUser(sessionUser);
     localStorage.setItem('qb_user', JSON.stringify(sessionUser));
     setIsDemoMode(true);
   };
 
-  const addNotificationToUser = (userId: string, message: string) => {
+  const addNotificationToUser = (userId, message) => {
     const demoUsers = JSON.parse(localStorage.getItem('demo_users') || '[]');
-    const updatedUsers = demoUsers.map((u: any) => {
+    const updatedUsers = demoUsers.map((u) => {
       if (u.id === userId) {
         const newNotif = {
           id: Date.now().toString(),
@@ -164,10 +134,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAllUsers(updatedUsers);
     
     if (user?.id === userId) {
-      const updatedUser = updatedUsers.find((u: any) => u.id === userId);
+      const updatedUser = updatedUsers.find((u) => u.id === userId);
       const sessionUser = { ...updatedUser, token: 'demo-token' };
-      delete (sessionUser as any).password;
-      setUser(sessionUser as any);
+      delete sessionUser.password;
+      setUser(sessionUser);
       localStorage.setItem('qb_user', JSON.stringify(sessionUser));
     }
   };
@@ -177,7 +147,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('qb_user');
   };
 
-  const updateUser = (userData: Partial<User>) => {
+  const updateUser = (userData) => {
     if (user) {
       const updated = { ...user, ...userData };
       setUser(updated);

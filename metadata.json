@@ -1,8 +1,8 @@
 {
-  "name": "IN-N-OUT - Online Food Delivery",
-  "description": "A comprehensive MERN-stack food delivery application with real-time order tracking, admin dashboard, and AI-powered food recommendations.",
+  "name": "ONLINEFOODDELIVERY - IN-N-OUT Addis",
+  "description": "Professional MERN Food Delivery System with Digital Concierge and Live Neighborhood Tracking. Built for Admas University Department of Computer Science.",
   "requestFramePermissions": [
-    "camera",
-    "microphone"
+    "microphone",
+    "geolocation"
   ]
 }

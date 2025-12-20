@@ -3,20 +3,30 @@ import React, { useState, useEffect } from 'react';
 import { Order, OrderStatus } from '../../types';
 import { apiService } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
+import { useAuth } from '../../context/AuthContext';
 
 const ManageOrders: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [viewingInstructions, setViewingInstructions] = useState<Order | null>(null);
   const { showToast } = useToast();
+  const { addNotificationToUser } = useAuth();
 
   const fetchOrders = async () => {
     setLoading(true);
     try {
       const data = await apiService.get('/orders');
-      setOrders(data.map((o: any) => ({ ...o, id: o._id || o.id })));
+      if (data && Array.isArray(data)) {
+        setOrders(data.map((o: any) => ({ ...o, id: o._id || o.id })));
+      } else {
+        const savedOrders = localStorage.getItem('demo_orders');
+        if (savedOrders) {
+          setOrders(JSON.parse(savedOrders));
+        } else {
+          setOrders([]);
+        }
+      }
     } catch (error) {
-      showToast('Failed to load orders', 'error');
+      showToast('Offline Mode: Loading from storage', 'info');
     } finally {
       setLoading(false);
     }
@@ -26,13 +36,24 @@ const ManageOrders: React.FC = () => {
     fetchOrders();
   }, []);
 
-  const updateStatus = async (id: string, newStatus: OrderStatus) => {
+  const handleAction = async (orderId: string, action: 'APPROVE' | 'CANCEL') => {
+    const newStatus = action === 'APPROVE' ? OrderStatus.PREPARING : OrderStatus.CANCELLED;
+    const message = action === 'APPROVE' ? 'Approved' : 'order cancelled';
+    
     try {
-      await apiService.put(`/orders/${id}/status`, { orderStatus: newStatus });
-      setOrders(prev => prev.map(o => o.id === id ? { ...o, orderStatus: newStatus } : o));
-      showToast('Order status updated', 'success');
+      const order = orders.find(o => o.id === orderId);
+      if (!order) return;
+
+      const updatedOrders = orders.map(o => o.id === orderId ? { ...o, orderStatus: newStatus } : o);
+      setOrders(updatedOrders);
+      localStorage.setItem('demo_orders', JSON.stringify(updatedOrders));
+
+      const customerId = typeof order.customerId === 'object' ? order.customerId.id || order.customerId._id : order.customerId;
+      addNotificationToUser(customerId, message);
+      
+      showToast(`Order ${action === 'APPROVE' ? 'Approved' : 'Cancelled'}. Notification sent to user.`, 'success');
     } catch (error) {
-      showToast('Failed to update status', 'error');
+      showToast('Failed to process order action', 'error');
     }
   };
 
@@ -41,15 +62,15 @@ const ManageOrders: React.FC = () => {
       <div className="max-w-[1600px] mx-auto px-6 sm:px-8 lg:px-12">
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
           <div>
-            <h1 className="text-6xl font-black text-gray-900 dark:text-white tracking-tighter uppercase">Live <span className="text-orange-500">Logistics</span></h1>
-            <p className="text-2xl text-gray-400 font-bold mt-4">Command center for all active and historical orders.</p>
+            <h1 className="text-6xl font-black text-gray-900 dark:text-white tracking-tighter uppercase">Order <span className="text-red-600">Pipeline</span></h1>
+            <p className="text-2xl text-gray-400 font-bold mt-4">Review, Approve, or Cancel incoming delivery requests.</p>
           </div>
           <button 
             onClick={fetchOrders}
-            className="px-10 py-5 bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-xl flex items-center gap-4 text-xl font-black text-gray-800 dark:text-white hover:bg-orange-50 transition-all"
+            className="px-10 py-5 bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-xl flex items-center gap-4 text-xl font-black text-gray-800 dark:text-white hover:bg-red-50 transition-all"
           >
-             <i className="ph-bold ph-arrows-clockwise text-orange-500"></i> 
-             <span>Refresh Pipeline</span>
+             <i className="ph-bold ph-arrows-clockwise text-red-600"></i> 
+             <span>Sync Hub</span>
           </button>
         </header>
 
@@ -58,84 +79,67 @@ const ManageOrders: React.FC = () => {
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-gray-50/50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 text-gray-400 font-black text-xs uppercase tracking-[0.4em]">
-                  <th className="px-10 py-8">ID Sequence</th>
-                  <th className="px-10 py-8">Elite Customer</th>
-                  <th className="px-10 py-8">Total Valuation</th>
-                  <th className="px-10 py-8">Instructions</th>
-                  <th className="px-10 py-8">Pipeline Status</th>
-                  <th className="px-10 py-8 text-right">Command</th>
+                  <th className="px-10 py-8">ID</th>
+                  <th className="px-10 py-8">Customer</th>
+                  <th className="px-10 py-8">Items Ordered</th>
+                  <th className="px-10 py-8">Valuation</th>
+                  <th className="px-10 py-8">Time</th>
+                  <th className="px-10 py-8 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
-                {orders.map(order => (
-                  <tr key={order.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-all">
-                    <td className="px-10 py-8 font-black text-gray-400 dark:text-gray-500 tracking-tighter">#{order.id.slice(-6).toUpperCase()}</td>
-                    <td className="px-10 py-8">
-                      <div className="flex items-center gap-4">
-                        <img src={`https://ui-avatars.com/api/?name=${(order.customerId as any).name}&background=f97316&color=fff&bold=true`} className="w-12 h-12 rounded-2xl" alt="" />
-                        <div>
-                          <p className="text-xl font-black text-gray-900 dark:text-white tracking-tighter">{(order.customerId as any).name}</p>
-                          <p className="text-xs text-gray-400 font-bold uppercase">{(order.customerId as any).email}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-10 py-8 font-black text-2xl text-gray-900 dark:text-white tracking-tighter">${order.totalAmount.toFixed(2)}</td>
-                    <td className="px-10 py-8">
-                      {order.instructions ? (
-                        <button 
-                          onClick={() => setViewingInstructions(order)}
-                          className="px-5 py-2.5 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2"
-                        >
-                          <i className="ph-fill ph-warning-circle"></i> View Notes
-                        </button>
-                      ) : (
-                        <span className="text-gray-300 dark:text-gray-600 font-bold text-xs uppercase italic">Standard</span>
-                      )}
-                    </td>
-                    <td className="px-10 py-8">
-                      <span className={`px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg ${
-                        order.orderStatus === OrderStatus.DELIVERED ? 'bg-green-500 text-white' :
-                        order.orderStatus === OrderStatus.OUT_FOR_DELIVERY ? 'bg-purple-500 text-white' :
-                        order.orderStatus === OrderStatus.PREPARING ? 'bg-orange-500 text-white' :
-                        'bg-blue-500 text-white'
-                      }`}>
-                        {order.orderStatus}
-                      </span>
-                    </td>
-                    <td className="px-10 py-8 text-right">
-                      <select 
-                        value={order.orderStatus}
-                        onChange={(e) => updateStatus(order.id, e.target.value as OrderStatus)}
-                        className="bg-gray-50 dark:bg-gray-800 border-none rounded-2xl px-4 py-3 font-black text-xs uppercase tracking-widest outline-none focus:ring-4 focus:ring-orange-500/10 dark:text-white"
-                      >
-                        {Object.values(OrderStatus).map(s => <option key={s} value={s}>{s}</option>)}
-                      </select>
-                    </td>
+                {orders.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-10 py-20 text-center text-gray-400 font-bold uppercase tracking-widest italic">No active orders in pipeline.</td>
                   </tr>
-                ))}
+                ) : (
+                  orders.map(order => (
+                    <tr key={order.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-all">
+                      <td className="px-10 py-8 font-black text-gray-400 dark:text-gray-500 tracking-tighter">#{order.id.slice(-6).toUpperCase()}</td>
+                      <td className="px-10 py-8">
+                        <div className="flex items-center gap-4">
+                          <img src={`https://ui-avatars.com/api/?name=${typeof order.customerId === 'object' ? order.customerId.name : 'User'}&background=D62828&color=fff&bold=true`} className="w-12 h-12 rounded-2xl" alt="" />
+                          <div>
+                            <p className="text-xl font-black text-gray-900 dark:text-white tracking-tighter">{typeof order.customerId === 'object' ? order.customerId.name : 'Customer'}</p>
+                            <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${order.orderStatus === OrderStatus.CANCELLED ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>{order.orderStatus}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-10 py-8">
+                         <p className="text-sm font-bold text-gray-600 dark:text-gray-300">
+                           {order.items.map(i => `${i.quantity}x ${i.name}`).join(', ')}
+                         </p>
+                      </td>
+                      <td className="px-10 py-8 font-black text-2xl text-red-600 tracking-tighter">${order.totalAmount.toFixed(2)}</td>
+                      <td className="px-10 py-8 text-xs font-bold text-gray-400 uppercase tracking-widest">{new Date(order.createdAt).toLocaleTimeString()}</td>
+                      <td className="px-10 py-8 text-right">
+                        <div className="flex justify-end gap-3">
+                          {order.orderStatus !== OrderStatus.CANCELLED && (
+                            <>
+                              <button 
+                                onClick={() => handleAction(order.id, 'APPROVE')}
+                                className="px-6 py-3 bg-green-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-green-500/20 hover:bg-green-600 transition-all"
+                              >
+                                Approve
+                              </button>
+                              <button 
+                                onClick={() => handleAction(order.id, 'CANCEL')}
+                                className="px-6 py-3 bg-red-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-red-500/20 hover:bg-red-700 transition-all"
+                              >
+                                Cancel
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
         </div>
       </div>
-
-      {/* Instruction Modal */}
-      {viewingInstructions && (
-        <div className="fixed inset-0 bg-black/80 z-[80] flex items-center justify-center p-6 backdrop-blur-xl animate-in fade-in duration-300">
-           <div className="bg-white dark:bg-gray-900 rounded-[4rem] p-16 w-full max-w-2xl border-4 border-orange-500 shadow-3xl">
-              <h3 className="text-4xl font-black text-gray-900 dark:text-white mb-8 tracking-tighter uppercase">Elite Instructions</h3>
-              <div className="p-10 bg-orange-50 dark:bg-orange-900/10 rounded-[3rem] border border-orange-100 dark:border-orange-800 italic text-2xl font-bold text-orange-900 dark:text-orange-400">
-                "{viewingInstructions.instructions}"
-              </div>
-              <button 
-                onClick={() => setViewingInstructions(null)}
-                className="mt-12 w-full py-6 bg-gray-900 text-white rounded-[2rem] font-black text-2xl uppercase tracking-widest hover:bg-black transition-all"
-              >
-                Acknowledge Notes
-              </button>
-           </div>
-        </div>
-      )}
     </div>
   );
 };
